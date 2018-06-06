@@ -1,42 +1,12 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
+import ReactDOM from 'react-dom';
 import todoList from './todos.json';
-
-class TodoItem extends Component {
-
-
-
-  render() {
-    return (
-    <li  className={this.props.completed ? ("completed") : ('')}>
-      <div className="view">
-        <input className="toggle" onChange={this.props.toggleCompleted} type="checkbox" checked={this.props.completed} autoFocus />
-        <label>{this.props.value}</label>
-        <button onClick={this.props.deleteCompleted} className="destroy" />
-      </div>
-    </li>
-    )
-  }
-}
-
-class TodoList extends Component {
-  constructor(props) {
-    super(props);
-  }
-
- render() {
-   return (
-    <section className="main">
-    <ul className="todo-list">
-      {/* These are here just to show the structure of the list items */}
-      {/* List items should get the class `editing` when editing and `completed` when marked as completed */}
-      {this.props.todos.map( todo => <TodoItem key={todo.id} deleteCompleted={this.props.deleteCompleted(todo.id)} toggleCompleted={this.props.toggleCompleted(todo.id)} value={todo.title} completed={todo.completed} /> )}
-    </ul>
-  </section>
-   )
- }
-}
+import TodoItem from './TodoItem';
+import TodoList from './TodoList';
+import registerServiceWorker from './registerServiceWorker';
+import { BrowserRouter, Route, Switch, Link } from 'react-router-dom';
 
 class App extends Component {
   constructor(props) {
@@ -83,6 +53,10 @@ class App extends Component {
     }
 
   render() {
+
+    const ActiveList = this.state.todos.filter(todo=> !todo.completed);
+    const CompletedList = this.state.todos.filter(todo => todo.completed);
+
     return (
       <section className="todoapp">
         <header className="header">
@@ -90,13 +64,35 @@ class App extends Component {
           <input className="new-todo" ref="clearInput" onKeyPress={this.handlePress} onChange={this.handleChange} placeholder="What needs to be done?" autofocus />
         </header>
         {/* This section should be hidden by default and shown when there are todos */}
-        <TodoList deleteCompleted={this.deleteCompleted} toggleCompleted={this.toggleCompleted} todos={this.state.todos} />
+        {/* <TodoList deleteCompleted={this.deleteCompleted} toggleCompleted={this.toggleCompleted} todos={this.state.todos} /> */}
+        <Switch>
+            <Route exact path='/' render={props => <TodoList {...props} todos={this.state.todos} deleteCompleted={this.deleteCompleted} toggleCompleted={this.toggleCompleted} />} />
+            <Route path='/active' render={props => <TodoList {...props} todos={ActiveList} deleteCompleted={this.deleteCompleted} toggleCompleted={this.toggleCompleted} ActiveList={ActiveList} />} />
+            <Route path='/completed' render={props => <TodoList {...props} todos={CompletedList} deleteCompleted={this.deleteCompleted} toggleCompleted={this.toggleCompleted} CompletedList={CompletedList} />} />
+        </Switch>
         {/* This footer should hidden by default and shown when there are todos */}
         <footer className="footer">
           {/* This should be `0 items left` by default */}
           <span className="todo-count"><strong>{this.state.todos.filter(todo => todo.completed !==true).length}</strong> item(s) left</span>
           {/* Remove this if you don't implement routing */}
           {/* Hidden if no completed items are left ↓ */}
+            <ul className="filters">
+              <li>
+                <Link to="/">
+                All
+                </Link>
+              </li>
+              <li>
+                <Link to="/active">
+                Active
+                </Link>
+              </li>
+              <li>
+                <Link to="/completed">
+                Completed
+                </Link>
+              </li>
+            </ul>
           <button onClick={this.deleteAllCompleted} className="clear-completed">Clear completed</button>
         </footer>
       </section>
